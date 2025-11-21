@@ -21,7 +21,7 @@ public class Cliente {
         this.componente = componente;
         this.idMaquina = idMaquina;
         this.valorLeitura = valorLeitura;
-        this.urlPost = "http://54.88.20.244:8080/chamadosJira";
+        this.urlPost = "http://98.83.124.125:8080/chamadosJira";
 
 
     }
@@ -33,7 +33,6 @@ public class Cliente {
                     .uri(URI.create(urlPost))
                     .header("Content-Type", "application/json")
                     .POST(body)
-                    .timeout(Duration.ofSeconds(3))
                     .build();
             return request;
     }
@@ -45,7 +44,7 @@ public String respostaPost(HttpRequest requisicaoTipo) throws Exception, Interru
     );
 
     try {
-        if(resposta.statusCode() == 200) {
+        if(resposta.statusCode() == 201) {
             System.out.println("Sucesso!");
             return resposta.body();
 
@@ -65,14 +64,9 @@ public String respostaPost(HttpRequest requisicaoTipo) throws Exception, Interru
 
     public Map<String, String> mapValoresGson(){
         Map<String, String> dados = new HashMap<>();
-
-        dados.put("key", "CHAMADO");
-
-
-        dados.put("summary", this.componente);
-
-
-        dados.put("text", "ID ATM: " + this.idMaquina + " | Alerta de uso: " + this.valorLeitura);
+        dados.put("nomeChamado", "CHAMADO");
+        dados.put("descricaoChamado", "Alerta: " + this.componente + " | Valor: " + this.valorLeitura);
+        dados.put("idMaquina", this.idMaquina);
 
         return dados;
     }

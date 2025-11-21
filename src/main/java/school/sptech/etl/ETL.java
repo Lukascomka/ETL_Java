@@ -102,7 +102,7 @@ public class ETL {
                 csvAlertas.add(linhaCsv);
             }
         }
-        lerCsv.escreverCsv("csv_alerta", csvAlertas);
+        lerCsv.escreverCsv( csvAlertas);
         return csvAlertas;
     }
 }
