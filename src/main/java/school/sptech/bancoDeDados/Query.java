@@ -20,13 +20,13 @@ public class Query {
 
         String query = String.format(
                 "SELECT \n" +
-                        "    c.Id_Caixa,\n" +
+                        "    c.Macaddress AS macaddress,\n" +
                         "    c.codigoCaixa,\n" +
                         "    comp.Nome_Componente,\n" +
-                        "    p.Valor_Parametrizado,\n" +
-                        "    c.macaddress\n"+
+                        "    p.Valor_Parametrizado\n" +
                         "\t\tFROM Caixa c\n" +
-                        "\t\tINNER JOIN Componentes comp ON c.Id_Caixa = comp.Fk_Caixa\n" +
+                        "\t\tINNER JOIN Caixa_Componente cc ON c.Id_Caixa = cc.Fk_Caixa\n" +
+                        "\t\tINNER JOIN Componentes comp ON comp.Id_Componente = cc.Fk_Componente\n" +
                         "\t\tINNER JOIN Parametros p ON p.Fk_Componente = comp.Id_Componente; "
         );
         System.out.println("\n"+"query no banco de dados = "+query);

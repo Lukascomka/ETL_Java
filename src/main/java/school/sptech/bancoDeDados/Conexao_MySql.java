@@ -14,9 +14,9 @@ public Conexao_MySql() {
 
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
-        dataSource.setUrl("jdbc:mysql://127.0.0.1:3306/BlackScreen");
+        dataSource.setUrl("jdbc:mysql://3.232.22.8:3306/BlackScreen");
         dataSource.setUsername("root");
-        dataSource.setPassword("100vergonhas");
+        dataSource.setPassword("urubu100");
 
 }
 

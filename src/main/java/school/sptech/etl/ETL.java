@@ -64,21 +64,27 @@ public class ETL {
                 String nomeComponente = linhaBanco[2];
                 String valorLimiteStr = linhaBanco[3];
 
-                if (macCsv.equalsIgnoreCase(macBanco)) {
+                if (macCsv.contains(macBanco)) {
                     try {
                         double limite = Double.parseDouble(valorLimiteStr.replace(",", "."));
                         double valorMedido = 0.0;
                         boolean estourou = false;
-                        if (nomeComponente.equalsIgnoreCase("CPU")) {
+
+
+                        if (nomeComponente.toLowerCase().contains("cpu")) {
                             valorMedido = Double.parseDouble(linhaCsv[2].replace(",", "."));
                             if (valorMedido > limite) estourou = true;
                         }
-                        else if (nomeComponente.equalsIgnoreCase("RAM")) {
+                        else if (nomeComponente.toLowerCase().contains("ram")) {
                             valorMedido = Double.parseDouble(linhaCsv[3].replace(",", "."));
                             if (valorMedido > limite) estourou = true;
                         }
-                        else if (nomeComponente.equalsIgnoreCase("DISCO")) {
+                        else if (nomeComponente.toLowerCase().contains("disco")) {
                             valorMedido = Double.parseDouble(linhaCsv[4].replace(",", "."));
+                            if (valorMedido > limite) estourou = true;
+                        }
+                        else if (nomeComponente.toLowerCase().contains("rede")) {
+                            valorMedido = Double.parseDouble(linhaCsv[5].replace(",", "."));
                             if (valorMedido > limite) estourou = true;
                         }
 
