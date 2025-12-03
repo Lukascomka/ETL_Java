@@ -15,7 +15,7 @@ public class ETL {
     LerCsv lerCsv = new LerCsv();
     Query query = new Query();
 
-    public ETL(){
+    public ETL() {
         resultadoQuery = new ArrayList<>();
     }
 
@@ -23,20 +23,14 @@ public class ETL {
 
         List<String[]> csvPronto = new ArrayList<>();
 
-        String regexVerificaSeEhDado = "^[0-9].*";
-
-
-
         for (String[] linhaVetor : csvParaTratamento) {
             for (int i = 0; i < linhaVetor.length; i++) {
-
                 linhaVetor[i] = linhaVetor[i].replace("\"", "").trim();
-
                 linhaVetor[i] = linhaVetor[i].replaceAll("(\\.\\d{2})\\d+", "$1");
             }
-
             csvPronto.add(linhaVetor);
         }
+
 
         for (int i = 0; i < csvPronto.size(); i++) {
             System.out.println(Arrays.toString(csvPronto.get(i)));
@@ -50,57 +44,77 @@ public class ETL {
         csvleitura = csvParaComparado;
         comparacao = query.buscarParametrosEATM();
 
+        List<String> alertasJaEnviados = new ArrayList<>();
 
         if (!csvleitura.isEmpty()) {
             csvAlertas.add(csvleitura.get(0));
         }
+
         for (int i = 1; i < csvleitura.size(); i++) {
             String[] linhaCsv = csvleitura.get(i);
             String macCsv = linhaCsv[0];
             boolean essaLinhaGerouAlerta = false;
+
             for (int j = 0; j < comparacao.size(); j++) {
                 String[] linhaBanco = comparacao.get(j);
                 String macBanco = linhaBanco[0];
                 String nomeComponente = linhaBanco[2];
                 String valorLimiteStr = linhaBanco[3];
 
-                if (macCsv.contains(macBanco)) {
+                if (macCsv.trim().contains(macBanco.trim())) {
                     try {
                         double limite = Double.parseDouble(valorLimiteStr.replace(",", "."));
                         double valorMedido = 0.0;
                         boolean estourou = false;
+                        boolean componenteEncontrado = false;
 
 
                         if (nomeComponente.toLowerCase().contains("cpu")) {
                             valorMedido = Double.parseDouble(linhaCsv[2].replace(",", "."));
-                            if (valorMedido > limite) estourou = true;
-                        }
-                        else if (nomeComponente.toLowerCase().contains("ram")) {
+                            componenteEncontrado = true;
+                        } else if (nomeComponente.toLowerCase().contains("ram")) {
                             valorMedido = Double.parseDouble(linhaCsv[3].replace(",", "."));
-                            if (valorMedido > limite) estourou = true;
-                        }
-                        else if (nomeComponente.toLowerCase().contains("disco")) {
+                            componenteEncontrado = true;
+                        } else if (nomeComponente.toLowerCase().contains("disco")) {
                             valorMedido = Double.parseDouble(linhaCsv[4].replace(",", "."));
-                            if (valorMedido > limite) estourou = true;
-                        }
-                        else if (nomeComponente.toLowerCase().contains("rede")) {
-                            valorMedido = Double.parseDouble(linhaCsv[5].replace(",", "."));
-                            if (valorMedido > limite) estourou = true;
+                            componenteEncontrado = true;
+                        } else if (nomeComponente.toLowerCase().contains("enviados")) {
+                            valorMedido = Double.parseDouble(linhaCsv[6].replace(",", "."));
+                            componenteEncontrado = true;
+                        } else if (nomeComponente.toLowerCase().contains("recebidos")) {
+                            valorMedido = Double.parseDouble(linhaCsv[7].replace(",", "."));
+                            componenteEncontrado = true;
+                        } else if (nomeComponente.toLowerCase().contains("perdidos")) {
+                            valorMedido = Double.parseDouble(linhaCsv[8].replace(",", "."));
+                            componenteEncontrado = true;
                         }
 
-                        if (estourou) {
-                            essaLinhaGerouAlerta = true;
-                            System.out.println("ALERTA! Enviando para Jira: " + nomeComponente + " | Valor: " + valorMedido);
-                            String nomeChamado = nomeComponente;
-                            Cliente clienteJira = new Cliente(
-                                    nomeComponente,
-                                    macCsv,
-                                    String.valueOf(valorMedido)
-                            );
-                            clienteJira.respostaPost(clienteJira.FetchPOST());
+                        if (componenteEncontrado) {
+                            if (valorMedido > limite) estourou = true;
+
+                            if (estourou) {
+                                essaLinhaGerouAlerta = true;
+                                String chaveUnicaAlerta = macCsv.trim() + "-" + nomeComponente.trim();
+
+                                if (!alertasJaEnviados.contains(chaveUnicaAlerta)) {
+                                    System.out.println("ALERTA NOVO! Enviando Jira: " + chaveUnicaAlerta + " | Valor: " + valorMedido);
+
+                                    Cliente clienteJira = new Cliente(
+                                            nomeComponente,
+                                            macCsv,
+                                            String.valueOf(valorMedido)
+                                    );
+                                    clienteJira.respostaPost(clienteJira.FetchPOST());
+                                    alertasJaEnviados.add(chaveUnicaAlerta);
+                                } else {
+                                    System.out.println("Alerta repetido ignorado para a máquina/componente: " + chaveUnicaAlerta);
+                                }
+
+                            }
                         }
                     } catch (Exception e) {
-                         System.out.println("Erro de conversão: " + e.getMessage());
+                        System.out.println("Erro processamento: " + e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             }
@@ -108,7 +122,14 @@ public class ETL {
                 csvAlertas.add(linhaCsv);
             }
         }
-        lerCsv.escreverCsv( csvAlertas);
+
+        lerCsv.escreverCsv(csvAlertas);
+        System.out.println("Processamento concluído. Total de alertas no CSV: " + (csvAlertas.size() - 1));
+
+        for (int i = 0; i < csvAlertas.size(); i++) {
+            System.out.println("Linha Alerta " + i + ": " + Arrays.toString(csvAlertas.get(i)));
+        }
+
         return csvAlertas;
     }
 }

@@ -23,8 +23,8 @@ public class LambdaHandler implements RequestHandler<S3Event, String> {
     public String handleRequest(S3Event event, Context context) {
 
         try {
-            String bucketOrigem = event.getRecords().get(0).getS3().getBucket().getName();
-            String chaveArquivo = event.getRecords().get(0).getS3().getObject().getKey();
+            String bucketOrigem = event.getRecords().getFirst().getS3().getBucket().getName();
+            String chaveArquivo = event.getRecords().getFirst().getS3().getObject().getKey();
 
             S3Object s3Object = s3Client.getObject(bucketOrigem, chaveArquivo);
             InputStream streamDoArquivo = s3Object.getObjectContent();
